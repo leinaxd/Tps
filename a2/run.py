@@ -52,11 +52,14 @@ wordVectors = np.concatenate(
     (wordVectors[:nWords,:], wordVectors[nWords:,:]),
     axis=0)
 
-visualizeWords = [
-    "great", "cool", "brilliant", "wonderful", "well", "amazing",
-    "worth", "sweet", "enjoyable", "boring", "bad", "dumb",
-    "annoying", "female", "male", "queen", "king", "man", "woman", "rain", "snow",
-    "hail", "coffee", "tea"]
+if len(sys.argv)>1:
+    visualizeWords = sys.argv[1:]
+else:
+    visualizeWords = [
+        "great", "cool", "brilliant", "wonderful", "well", "amazing",
+        "worth", "sweet", "enjoyable", "boring", "bad", "dumb",
+        "annoying", "female", "male", "queen", "king", "man", "woman", "rain", "snow",
+        "hail", "coffee", "tea"]
 
 visualizeIdx = [tokens[word] for word in visualizeWords]
 visualizeVecs = wordVectors[visualizeIdx, :]
