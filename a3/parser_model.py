@@ -72,7 +72,8 @@ class ParserModel(nn.Module):
         ###     Dropout: https://pytorch.org/docs/stable/nn.html#dropout-layers
         ### 
         ### See the PDF for hints.
-
+        self.embed_to_hidden_units = nn.Parameter()
+        self.embed_to_hidden_bias = nn.Parameter()
 
 
 
@@ -150,7 +151,6 @@ class ParserModel(nn.Module):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description='Simple sanity check for parser_model.py')
     parser.add_argument('-e', '--embedding', action='store_true', help='sanity check for embeding_lookup function')
     parser.add_argument('-f', '--forward', action='store_true', help='sanity check for forward function')
