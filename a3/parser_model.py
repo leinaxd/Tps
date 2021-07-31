@@ -74,7 +74,7 @@ class ParserModel(nn.Module):
         ### See the PDF for hints.
         self.embed_to_hidden_units = nn.Parameter()
         self.embed_to_hidden_bias = nn.Parameter()
-        self.dropout = None
+    
 
 
         ### END YOUR CODE
