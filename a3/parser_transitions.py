@@ -33,7 +33,9 @@ class PartialParse(object):
         ### Note: If you need to use the sentence object to initialize anything, make sure to not directly 
         ###       reference the sentence object.  That is, remember to NOT modify the sentence object. 
 
-
+        self.stack = ["ROOT"]
+        self.buffer = self.sentence.copy()
+        self.dependencies = []
         ### END YOUR CODE
 
 
@@ -51,8 +53,16 @@ class PartialParse(object):
         ###         1. Shift
         ###         2. Left Arc
         ###         3. Right Arc
-
-
+        if transition == "S":
+            self.stack.append( self.buffer.pop(0) )
+        elif transition == "LA":
+            wi = self.stack.pop(-2)
+            wj = self.stack[-1]
+            self.dependencies.append( (wj, wi) )
+        elif transition == "RA":
+            wi = self.stack[-2]
+            wj = self.stack.pop(-1)
+            self.dependencies.append((wi, wj))
         ### END YOUR CODE
 
     def parse(self, transitions):
@@ -102,8 +112,18 @@ def minibatch_parse(sentences, model, batch_size):
     ###             contains references to the same objects. Thus, you should NOT use the `del` operator
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
+    partial_parses = [PartialParse(sentence) for sentence in sentences]
+    unfinished_parses = partial_parses.copy()
 
-
+    while unfinished_parses:
+        batchSize = min(batch_size, len(unfinished_parses))
+        batch = unfinished_parses[0:batchSize]
+        transitions = model.predict(batch)
+        for i in range(batchSize):
+            batch[i].parse_step( transitions[i] )
+            if len(batch[i].stack) == 1 and batch[i].buffer == []:
+                unfinished_parses.pop(i)
+                dependencies.append(batch[i].dependencies)
     ### END YOUR CODE
 
     return dependencies
@@ -171,7 +191,7 @@ class DummyModel(object):
         """First shifts everything onto the stack and then does exclusively right arcs if the first word of
         the sentence is "right", "left" if otherwise.
         """
-        return [("RA" if pp.stack[1] is "right" else "LA") if len(pp.buffer) == 0 else "S"
+        return [("RA" if pp.stack[1] == "right" else "LA") if len(pp.buffer) == 0 else "S"
                 for pp in partial_parses]
 
     def interleave_predict(self, partial_parses):
