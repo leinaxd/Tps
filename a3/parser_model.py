@@ -72,11 +72,22 @@ class ParserModel(nn.Module):
         ###     Dropout: https://pytorch.org/docs/stable/nn.html#dropout-layers
         ### 
         ### See the PDF for hints.
-        self.embed_to_hidden_units = nn.Parameter()
-        self.embed_to_hidden_bias = nn.Parameter()
-    
-
-
+        # dim(   E = [E_1;...;E_m]       ) = |V| x d          :Matriz de embeddings (tiene todos los embeddings para todas las palabras)
+        # dim(   x = [E_1, ..., E_m]     ) = 1 x d·m          :d·m = embed_size. cantidad de Features, se concatenan los vectores
+        # dim(   h = ReLu(       xW + b1)) = hidden_size      :hidden_size=200
+        # dim(yhat = softmax(l = hU + b2)) = n_classes        :n_classes=3
+        #Hidden
+        self.embed_to_hidden_units = nn.Parameter(torch.empty(self.embed_size, hidden_size))
+        self.embed_to_hidden_bias  = nn.Parameter(torch.empty(hidden_size))
+        nn.init.xavier_uniform_(self.embed_to_hidden_units)
+        nn.init.uniform_(self.embed_to_hidden_units)
+        #Dropout
+        self.dropout = nn.Dropout(dropout_prob)
+        #Output
+        self.hidden_to_logits_weight = nn.Parameter(torch.empty(hidden_size, n_classes))
+        self.hidden_to_logits_bias   = nn.Parameter(torch.empty(n_classes))
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+        nn.init.uniform_(self.hidden_to_logits_bias)
         ### END YOUR CODE
 
     def embedding_lookup(self, w):
