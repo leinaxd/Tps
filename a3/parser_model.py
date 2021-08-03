@@ -118,9 +118,12 @@ class ParserModel(nn.Module):
         ###     Gather: https://pytorch.org/docs/stable/torch.html#torch.gather
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
-
-
-
+        # dim(self.embeddings) = |V| x embed_size
+        #               dim(w) = batch_size x n_features
+        #               dim(x) = batch_size x n_features·embed_size
+        x = torch.empty(w.shape[0], w.shape[1]*self.embed_size)
+        for i, batch in enumerate(w):
+            x[i,:] = torch.index_select(self.embeddings,0,batch).flatten()
         ### END YOUR CODE
         return x
 
