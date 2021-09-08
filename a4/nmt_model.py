@@ -172,13 +172,15 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.cat
         ###     Tensor Permute:
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute
-        X = source_padded
-        print(X)
-        # X=pack_padded_sequence(source_padded, source_lengths)
-
-
-
-
+        X = self.model_embeddings.source(source_padded)                         #X: Dada una secuencia de ix, busco sus encoddings
+        X = pack_padded_sequence(X, source_lengths)                             #Empaqueto para ahorrar computo
+        enc_hiddens, (last_hidden, last_cell) = self.encoder(X)                 #Aplico el encoder Bi-LSTM
+        enc_hiddens, _ = pad_packed_sequence(enc_hiddens, True)   #Lo desempaqueto en una matriz para utilizar
+        last_hidden = torch.cat(tuple(last_hidden), 1)                           #Tuple, corta por la ultima dimension
+        last_cell   = torch.cat(tuple(  last_cell), 1)
+        init_decoder_hidden = self.h_projection(last_hidden)
+        init_decoder_cell = self.c_projection(last_cell)
+        dec_init_state = (init_decoder_hidden, init_decoder_cell)
         ### END YOUR CODE
 
         return enc_hiddens, dec_init_state
