@@ -76,8 +76,8 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Linear
         ###     Dropout Layer:
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Dropout
-        self.encoder = nn.LSTM(embed_size, self.hidden_size, bidirectional=True)
-        self.decoder = nn.LSTMCell(embed_size, self.hidden_size)
+        self.encoder = nn.LSTM(embed_size, hidden_size, bidirectional=True)
+        self.decoder = nn.LSTMCell(embed_size + hidden_size, hidden_size)
         self.h_projection = nn.Linear(2*embed_size, embed_size, False) #h_0^dec = W_h [<-h_1^enc ; ->h_m^enc]
         self.c_projection = nn.Linear(2*embed_size, embed_size, False) #c_0^dec = W_c [<-c_1^enc ; ->c_m^enc]
         self.att_projection = nn.Linear(2*embed_size, embed_size, False) #e_t,i = (h_t^dec)^T W_h h_i^enc
@@ -313,10 +313,9 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.unsqueeze
         ###     Tensor Squeeze:
         ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
-
-
-
-
+        dec_state = self.decoder(Ybar_t, dec_state)
+        dec_hidden, dec_cell = dec_state
+        e_t = torch.bmm(enc_hiddens_proj, dec_hidden.unsqueeze(-1)).squeeze(1)  #(b x src_len x h) · (b x h x 1) = (b x src_len x 1)
         ### END YOUR CODE
 
         # Set e_t to -inf where enc_masks has 1
@@ -350,7 +349,7 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.cat
         ###     Tanh:
         ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
-
+        # alpha_t = F.softmax(e_t)
 
 
 
