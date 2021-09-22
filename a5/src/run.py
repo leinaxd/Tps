@@ -55,7 +55,7 @@ Don't change above here; write your code below
 """
 
 if args.variant == 'vanilla':
-    pass # TODO [part c]: Make some model here
+    modelo = model.GPT(mconf) # TODO [part c]: Make some model here
 elif args.variant == 'synthesizer':
     pass # TODO [part g]: Make some other model here
 
@@ -112,7 +112,15 @@ elif args.function == 'finetune':
     #         warmup_tokens=512*20
     #         final_tokens=200*len(pretrain_dataset)*block_size
     #         num_workers=4
-    raise NotImplementedError
+    # [part c]
+    tconf = trainer.TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4,
+                      lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size,
+                      num_workers=4)
+    #El pretrain es para obtener los indices del vocabulario
+    finetune_dataset = dataset.NameDataset(pretrain_dataset, open(args.finetune_corpus_path).read())
+    
+    entrenador = trainer.Trainer(modelo, finetune_dataset, None, tconf)
+    entrenador.train()
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
     assert args.reading_params_path is not None
