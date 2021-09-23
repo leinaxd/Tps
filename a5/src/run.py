@@ -119,7 +119,7 @@ elif args.function == 'finetune':
     #El pretrain es para obtener los indices del vocabulario
     finetune_dataset = dataset.NameDataset(pretrain_dataset, open(args.finetune_corpus_path).read())
     
-    entrenador = trainer.Trainer(modelo, finetune_dataset, None, tconf)
+    entrenador = trainer.Trainer(model, finetune_dataset, None, tconf)
     entrenador.train()
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
