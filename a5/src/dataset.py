@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import Dataset
 import argparse
 import sys
+#Ver el traceback con color
 from IPython.core import ultratb
 print(sys.version)
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False)
