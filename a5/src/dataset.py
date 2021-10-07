@@ -1,13 +1,10 @@
 #!python3
+from os import truncate
 import random
 import torch
 from torch.utils.data import Dataset
 import argparse
 import sys
-#Ver el traceback con color
-from IPython.core import ultratb
-print(sys.version)
-# sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False)
 
 """
 The input-output pairs (x, y) of the NameDataset are of the following form:
@@ -174,8 +171,39 @@ class CharCorruptionDataset(Dataset):
 
     def __getitem__(self, idx):
         # TODO [part e]: see spec above
-        x = self.data[idx]
-        y=x
+        doc = self.data[idx] #Ej. La casa
+        max_size = min(int(self.block_size*7/8), len(doc)) #=7
+
+        #Truncate document [---][x_trunc][---]
+        new_size=random.randrange(4, max_size+1) #range[4,7]
+        truncate_start=random.randrange(0, len(doc)-new_size)
+        trunc_doc = doc[truncate_start:truncate_start+new_size]
+        # print('size:',len(doc))
+        # print('doc',doc)
+        # print('start:',truncate_start)
+        # print('new-size:',new_size)
+        # print('trunc_doc:',trunc_doc)
+
+        #ReTruncate into [prefix][masked][suffix]
+        trunc_size = random.randrange(1, int(new_size/2)) #E[trunc_size]=1/4 E[new_size]
+        truncate_start=random.randrange(0,new_size-trunc_size)
+        prefix = trunc_doc[0:truncate_start]
+        masked_content = trunc_doc[truncate_start:truncate_start+trunc_size]
+        suffix = trunc_doc[truncate_start+trunc_size:]
+
+        masked_string=prefix+self.MASK_CHAR+suffix+self.MASK_CHAR+masked_content+self.PAD_CHAR*(self.block_size-trunc_size-2)#son 2 simbolos
+
+        # print('start:',truncate_start)
+        # print('new-size:',trunc_size)
+        # print('prefix',prefix)
+        # print('masked_content',masked_content)
+        # print('suffix',suffix)
+        # print('y',masked_string)
+        # print('y',len(masked_string), self.block_size)
+        input = masked_string[:-1]
+        output = masked_string[1:]
+        x = torch.tensor([self.stoi[c] for c in input], dtype=torch.long)
+        y = torch.tensor([self.stoi[c] for c in output], dtype=torch.long)
         return x, y
 
 """
