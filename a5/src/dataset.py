@@ -7,7 +7,7 @@ import sys
 #Ver el traceback con color
 from IPython.core import ultratb
 print(sys.version)
-sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False)
+# sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False)
 
 """
 The input-output pairs (x, y) of the NameDataset are of the following form:
@@ -174,8 +174,9 @@ class CharCorruptionDataset(Dataset):
 
     def __getitem__(self, idx):
         # TODO [part e]: see spec above
-        x, y = self.data[idx]
-        raise NotImplementedError
+        x = self.data[idx]
+        y=x
+        return x, y
 
 """
 Code under here is strictly for your debugging purposes; feel free to modify
@@ -187,7 +188,6 @@ if __name__ == '__main__':
             "Options: namedata, charcorruption.",
             choices=["namedata", "charcorruption"])
     args = argp.parse_args()
-
     if args.dataset_type == 'namedata':
         # Even if it hasn't been implemented, we use it to define the vocab
         corruption_dataset = CharCorruptionDataset(open('wiki.txt').read(), 128)
