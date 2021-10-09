@@ -80,15 +80,20 @@ if args.function == 'pretrain':
     #     warmup_tokens=512*20
     #     final_tokens=200*len(pretrain_dataset)*block_size
     #     num_workers=4
-    raise NotImplementedError
+    tconf = trainer.TrainerConfig(max_epochs=650, batch_size=128, learning_rate=6e-3,
+                      lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size,
+                      ckpt_path=args.writing_params_path, num_workers=4)
+    pretrain_dataset = dataset.CharCorruptionDataset(open(args.pretrain_corpus_path).read(), block_size)
+    
+    entrenador = trainer.Trainer(model, pretrain_dataset, None, tconf)
+    entrenador.train()
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
     # TODO [part c] [part f]:
     # - Given:
     #     1. A finetuning corpus specified in args.finetune_corpus_path
-    #     2. A path args.reading_params_path containing pretrained model
-    #         parameters, or None if finetuning without a pretrained model
+    #     2. A path args.reading_params_path containing pretrained model parameters, or None if finetuning without a pretrained model
     #     3. An output path args.writing_params_path for the model parameters
     # - Goals:
     #     1. If args.reading_params_path is specified, load these parameters
@@ -112,6 +117,9 @@ elif args.function == 'finetune':
     #         warmup_tokens=512*20
     #         final_tokens=200*len(pretrain_dataset)*block_size
     #         num_workers=4
+    # [part f]
+    if args.reading_params_path:
+        model.load_state_dict(torch.load(args.reading_params_path))
     # [part c]
     tconf = trainer.TrainerConfig(max_epochs=75, batch_size=256, learning_rate=6e-4,
                       lr_decay=True, warmup_tokens=512*20, final_tokens=200*len(pretrain_dataset)*block_size,
