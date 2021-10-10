@@ -55,9 +55,12 @@ Don't change above here; write your code below
 """
 
 if args.variant == 'vanilla':
-    model = model.GPT(mconf) # TODO [part c]: Make some model here
+    # TODO [part c]: Make some model here
+    model = model.GPT(mconf) 
 elif args.variant == 'synthesizer':
-    pass # TODO [part g]: Make some other model here
+    # TODO [part g]: Make some other model here
+    mconf.synthesizer=True
+    model = model.GPT(mconf)
 
 # From here on, your code should be identical independent of which
 # variant (vanilla or synthesizer) has been chosen.

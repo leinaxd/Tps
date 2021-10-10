@@ -72,8 +72,7 @@ class SynthesizerAttention(nn.Module):
         self.resid_drop = nn.Dropout(config.resid_pdrop)
         # output projection
         self.proj = nn.Linear(config.n_embd, config.n_embd)
-        # causal mask to ensure that attention is only applied to the left in
-        #     the input sequence
+        # causal mask to ensure that attention is only applied to the left in the input sequence
         self.register_buffer("mask", torch.tril(
             torch.ones(config.block_size, config.block_size)).view(
                 1, 1, config.block_size, config.block_size))
@@ -89,5 +88,28 @@ class SynthesizerAttention(nn.Module):
         #   - Paste over the CausalSelfAttention above and modify it minimally.
         #   - Consider especially the parameters self.w1, self.w2 and self.b2.
         #       How do these map to the matrices in the handout?
+        
+        B, T, C = x.size() #(batch, block_size, embed_size)
+        #w1 = Ax+b1
+        attn = self.w1(x) #(Batch x T x embed_size)
+        attn = attn.view(B,T,self.n_head,C//self.n_head) #(B x T x nh x d/h)
+        attn = attn.transpose(1,2) # (B x nh x T x d/h)
+        attn = F.relu(attn) #(B x nh x T x d/h)
+        #attn = attn*B = (B x nh x T x d/h) x (d/h x T)
+        attn = attn @ self.w2 # (B x nh x T x T)
+        #attn = attn + b2 = (B x nh x T x T)
+        attn = attn + self.b2 #(B x nh x T x T)
+        #Todo: Hay que poner una mascara?
+        attn = attn.masked_fill(self.mask[:,:,:T,:T] == 0, -1e10) # todo: just use float('-inf') instead?
+        attn = F.softmax(attn, dim=-1)
+        attn = self.attn_drop(attn)
+        # value = (d x d)
+        v = self.value(x).view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+        y = attn @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+        y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
-        raise NotImplementedError
+        # output projection
+        y = self.resid_drop(self.proj(y))
+        
+        return y        
+
