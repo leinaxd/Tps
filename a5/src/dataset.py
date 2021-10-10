@@ -175,9 +175,9 @@ class CharCorruptionDataset(Dataset):
         max_size = min(int(self.block_size*7/8), len(doc)) #=7
 
         #Truncate document [---][x_trunc][---]
-        new_size=random.randrange(4, max_size+1) #range[4,7]
-        truncate_start=random.randrange(0, len(doc)-new_size)
-        trunc_doc = doc[truncate_start:truncate_start+new_size]
+        trunc_doc_size=random.randrange(4, max_size+1) #range[4,7]
+        truncate_start=random.randrange(0, len(doc)-trunc_doc_size+1)
+        trunc_doc = doc[truncate_start:truncate_start+trunc_doc_size]
         # print('size:',len(doc))
         # print('doc',doc)
         # print('start:',truncate_start)
@@ -185,13 +185,13 @@ class CharCorruptionDataset(Dataset):
         # print('trunc_doc:',trunc_doc)
 
         #ReTruncate into [prefix][masked][suffix]
-        trunc_size = random.randrange(1, int(new_size/2)) #E[trunc_size]=1/4 E[new_size]
-        truncate_start=random.randrange(0,new_size-trunc_size)
-        prefix = trunc_doc[0:truncate_start]
-        masked_content = trunc_doc[truncate_start:truncate_start+trunc_size]
-        suffix = trunc_doc[truncate_start+trunc_size:]
+        masked_size = random.randrange(1, int(trunc_doc_size/2)) #E[trunc_size]=1/4 E[new_size]
+        masked_start=random.randrange(1,trunc_doc_size-masked_size-1) #Dejo al menos 1 para el suffix
+        prefix = trunc_doc[0:masked_start]
+        masked_content = trunc_doc[masked_start:masked_start+masked_size]
+        suffix = trunc_doc[masked_start+masked_size:]
 
-        masked_string=prefix+self.MASK_CHAR+suffix+self.MASK_CHAR+masked_content+self.PAD_CHAR*(self.block_size-trunc_size-2)#son 2 simbolos
+        masked_string=prefix+self.MASK_CHAR+suffix+self.MASK_CHAR+masked_content+self.PAD_CHAR*(self.block_size-trunc_doc_size-2)#son 2 simbolos
 
         # print('start:',truncate_start)
         # print('new-size:',trunc_size)
