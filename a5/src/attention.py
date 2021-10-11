@@ -96,9 +96,9 @@ class SynthesizerAttention(nn.Module):
         attn = attn.transpose(1,2) # (B x nh x T x d/h)
         attn = F.relu(attn) #(B x nh x T x d/h)
         #attn = attn*B = (B x nh x T x d/h) x (d/h x T)
-        attn = attn @ self.w2 # (B x nh x T x T)
+        attn = attn @ self.w2[:,:T] # (B x nh x T x T)
         #attn = attn + b2 = (B x nh x T x T)
-        attn = attn + self.b2 #(B x nh x T x T)
+        attn = attn + self.b2[:T] #(B x nh x T x T)
         #Todo: Hay que poner una mascara?
         attn = attn.masked_fill(self.mask[:,:,:T,:T] == 0, -1e10) # todo: just use float('-inf') instead?
         attn = F.softmax(attn, dim=-1)
