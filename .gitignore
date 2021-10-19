@@ -1,0 +1,5 @@
+a5/vanilla.pretrain.test.predictions
+a5/vanilla.pretrain.params
+a5/vanilla.pretrain.dev.predictions
+a5/synthesizer.pretrain.params
+a5/synthesizer.finetune.params
