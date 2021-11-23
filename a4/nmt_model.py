@@ -10,7 +10,8 @@ Vera Lin <veralin@stanford.edu>
 """
 from collections import namedtuple
 import sys
-from typing import List, Tuple, Dict, Set, Union
+from typing import List, Tuple, Dict, Set, Union, no_type_check_decorator
+import typing
 import torch
 import torch.nn as nn
 import torch.nn.utils
@@ -104,7 +105,7 @@ class NMT(nn.Module):
         # Convert list of lists into tensors
         source_padded = self.vocab.src.to_input_tensor(source, device=self.device)   # Tensor: (src_len, b)
         target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
-
+        
         ###     Run the network forward:
         ###     1. Apply the encoder to `source_padded` by calling `self.encode()`
         ###     2. Generate sentence masks for `source_padded` by calling `self.generate_sent_masks()`
@@ -113,13 +114,14 @@ class NMT(nn.Module):
         ###        combined_outputs returned by the `self.decode()` function.
 
         enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
+        # print(dec_init_state[0].shape, dec_init_state[1].shape)
+        # raise NotImplementedError
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
 
         # Zero out, probabilities for which we have nothing in the target text
         target_masks = (target_padded != self.vocab.tgt['<pad>']).float()
-        
         # Compute log probability of generating true target words
         target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
         scores = target_gold_words_log_prob.sum(dim=0)
