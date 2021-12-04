@@ -391,6 +391,8 @@ class NMT(nn.Module):
         src_encodings, dec_init_vec = self.encode(src_sents_var, [len(src_sent)])
         src_encodings_att_linear = self.att_projection(src_encodings)
 
+        print(src_encodings, src_encodings.shape)
+        # raise NotImplementedError
         h_tm1 = dec_init_vec
         att_tm1 = torch.zeros(1, self.hidden_size, device=self.device)
 

@@ -288,7 +288,18 @@ def decode(args: Dict[str, str]):
         test_data_tgt = read_corpus(args['TEST_TARGET_FILE'], source='tgt', vocab_size=2000)
 
     print("load model from {}".format(args['MODEL_PATH']), file=sys.stderr)
-    model = NMT.load(args['MODEL_PATH'])
+    ######### Esto lo edite para poder debuggear
+    debug = True
+    if debug:
+        vocab = Vocab.load('vocab.json')
+        model = NMT(embed_size=1024,
+                    hidden_size=1024,
+                    dropout_rate=0.3,
+                    vocab=vocab)
+    else:
+        model = NMT.load(args['MODEL_PATH'])
+    #################
+    # model = NMT.load(args['MODEL_PATH'])
 
     if args['--cuda']:
         model = model.to(torch.device("cuda:0"))
