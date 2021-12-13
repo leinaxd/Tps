@@ -114,9 +114,8 @@ class NMT(nn.Module):
         ###        combined_outputs returned by the `self.decode()` function.
 
         enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
-        # print(dec_init_state[0].shape, dec_init_state[1].shape)
-        # raise NotImplementedError
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
+        # raise NotImplementedError
         combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
 
@@ -391,10 +390,10 @@ class NMT(nn.Module):
         src_encodings, dec_init_vec = self.encode(src_sents_var, [len(src_sent)])
         src_encodings_att_linear = self.att_projection(src_encodings)
 
-        print(src_encodings, src_encodings.shape)
-        # raise NotImplementedError
         h_tm1 = dec_init_vec
         att_tm1 = torch.zeros(1, self.hidden_size, device=self.device)
+        # print(src_encodings, src_encodings.shape)
+        # raise NotImplementedError
 
         eos_id = self.vocab.tgt['</s>']
 
@@ -406,7 +405,7 @@ class NMT(nn.Module):
         while len(completed_hypotheses) < beam_size and t < max_decoding_time_step:
             t += 1
             hyp_num = len(hypotheses)
-
+            
             exp_src_encodings = src_encodings.expand(hyp_num,
                                                      src_encodings.size(1),
                                                      src_encodings.size(2))
@@ -414,7 +413,6 @@ class NMT(nn.Module):
             exp_src_encodings_att_linear = src_encodings_att_linear.expand(hyp_num,
                                                                            src_encodings_att_linear.size(1),
                                                                            src_encodings_att_linear.size(2))
-
             y_tm1 = torch.tensor([self.vocab.tgt[hyp[-1]] for hyp in hypotheses], dtype=torch.long, device=self.device)
             y_t_embed = self.model_embeddings.target(y_tm1)
 
