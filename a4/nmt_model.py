@@ -392,8 +392,6 @@ class NMT(nn.Module):
 
         h_tm1 = dec_init_vec
         att_tm1 = torch.zeros(1, self.hidden_size, device=self.device)
-        # print(src_encodings, src_encodings.shape)
-        # raise NotImplementedError
 
         eos_id = self.vocab.tgt['</s>']
 
